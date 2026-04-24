@@ -6,3 +6,4 @@ mlflow
 pandas
 pyyaml
 numpy
+python-dotenv
