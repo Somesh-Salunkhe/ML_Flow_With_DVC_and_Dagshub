@@ -35,22 +35,28 @@ params = yaml.safe_load(open("config.yaml"))["train"]
 
 
 # Model trainer and ML flow logging function
-def trainer(data_path,model_path,random_state):
+def trainer(train_path, val_path, test_path , model_path):
     # Read processed data
-    data = pd.read_csv(data_path)
+    train_data = pd.read_csv(train_path)
+    val_data = pd.read_csv(val_path)
+    test_data = pd.read_csv(test_path)
 
-    # Splitting data
-    X = data.drop(columns=["Outcome"])
-    y = data['Outcome']
+    # Splitting features and target
+    X_train = train_data.drop(columns=["Outcome"])
+    y_train = train_data["Outcome"]
+
+    X_val = val_data.drop(columns=["Outcome"])
+    y_val = val_data["Outcome"]
+
+    X_test = test_data.drop(columns=["Outcome"])
+    y_test = test_data["Outcome"]
 
     # Setting mlflow tracking uri
     mlflow.set_tracking_uri(os.environ['MLFLOW_TRACKING_URI'])
 
     # Start ML Flow run
     with mlflow.start_run():
-        # Split data into train and test datasets
-        X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=random_state)
-
+        
         # Signature for input and ouput schema
         signature = infer_signature(X_train, y_train)
 
@@ -68,13 +74,20 @@ def trainer(data_path,model_path,random_state):
         # Best model
         best_model = grid_search.best_estimator_
 
+        # Evaluate on validation set 
+        val_pred = best_model.predict(X_val)
+        val_accuracy = accuracy_score(y_val, val_pred)
+
+        print(f"Validation Accuracy: {val_accuracy}")
+
         # Prediction
         y_pred = best_model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        print(f"Accuracy: {accuracy}")
+        test_accuracy = accuracy_score(y_test, y_pred)
+        print(f"Accuracy: {test_accuracy}")
 
         # Log metrics
-        mlflow.log_metric('accuracy', accuracy)
+        mlflow.log_metric("val_accuracy", val_accuracy)
+        mlflow.log_metric('accuracy', test_accuracy)
         mlflow.log_param("best_n_estimators", grid_search.best_params_['n_estimators'])
         mlflow.log_param("best_max_depth", grid_search.best_params_['max_depth'])
         mlflow.log_param("best_samples_split", grid_search.best_params_['min_samples_split'])
@@ -106,4 +119,7 @@ def trainer(data_path,model_path,random_state):
 
 
 if __name__ == "__main__":
-    trainer(params['data'], params['model'], params['random_state'])
+    trainer( params["train_data"],
+        params["val_data"],
+        params["test_data"],
+        params["model"])
