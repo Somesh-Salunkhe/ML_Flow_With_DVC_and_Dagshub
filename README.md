@@ -42,19 +42,29 @@ This project demonstrates how to manage the lifecycle of a machine learning proj
 
 ### For Adding Stages
 
+```bash
+# Preprocess stage
 dvc stage add -n preprocess \
-    -p preprocess.input,preprocess.output \
-    -d src/preprocess.py -d data/raw/data.csv \
-    -o data/processed/data.csv \
-    python src/preprocess.py
-	
-	
+  -p preprocess.input,preprocess.train_output,preprocess.val_output,preprocess.test_output \
+  -d src/preprocess.py -d data/raw/data.csv \
+  -o data/processed/train.csv -o data/processed/val.csv -o data/processed/test.csv \
+  python src/preprocess.py
+
+# Train stage
 dvc stage add -n train \
-    -p train.data,train.model,train.random_state,train.n_estimators,train.max_depth \
-    -d src/train.py -d data/raw/data.csv \
-    -o models/model.pkl \
-    python src/train.py
-	
+  -p train.train_data,train.val_data,train.test_data,train.model \
+  -d src/train.py -d data/processed/train.csv -d data/processed/val.csv -d data/processed/test.csv \
+  -o models/model.pkl \
+  python src/train.py
+
+# Evaluate stage
 dvc stage add -n evaluate \
-    -d src/evaluate.py -d models/model.pkl -d data/raw/data.csv \
-    python src/evaluate.py
+  -p train.test_data,train.model \
+  -d src/evaluate.py -d models/model.pkl -d data/processed/test.csv \
+  python src/evaluate.py
+```
+
+To run the pipeline:
+```bash
+dvc repro
+```

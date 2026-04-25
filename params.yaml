@@ -1,10 +1,9 @@
 # Preprocessing config
 preprocess:
   input: data/raw/data.csv
-  output: 
-    train : data/processed/train.csv
-    test: data/processed/test.csv
-    val: data/processed/val.csv
+  train_output: data/processed/train.csv
+  val_output: data/processed/val.csv
+  test_output: data/processed/test.csv
 
 # Training config
 train:
