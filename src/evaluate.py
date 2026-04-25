@@ -8,16 +8,23 @@ import yaml
 import os
 import mlflow
 from dotenv import load_dotenv
+import sys
 
 
 # Load environment variables
 load_dotenv()
-os.environ['MLFLOW_TRACKING_URI'] = os.getenv("MLFLOW_TRACKING_URI")
-os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
-os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+for env_var in ["MLFLOW_TRACKING_URI", "MLFLOW_TRACKING_USERNAME", "MLFLOW_TRACKING_PASSWORD"]:
+    val = os.getenv(env_var)
+    if val is not None:
+        os.environ[env_var] = val
 
-# Load configuration from config.yaml
-params = yaml.safe_load(open("config.yaml"))['train']
+# Fix for Windows encoding issues with emojis in MLflow
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+# Load configuration from params.yaml
+params = yaml.safe_load(open("params.yaml"))['train']
 
 def evaluate(data_path, model_path):
     # Read data
@@ -44,4 +51,4 @@ def evaluate(data_path, model_path):
 
 
 if __name__ == "__main__":
-    evaluate(params['data'], params['model'])
+    evaluate(params['test_data'], params['model'])

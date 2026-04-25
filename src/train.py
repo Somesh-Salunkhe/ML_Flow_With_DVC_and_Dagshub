@@ -12,12 +12,19 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 import mlflow
+import sys
 
 # Loading environment variables
 load_dotenv()
-os.environ['MLFLOW_TRACKING_URI'] = os.getenv("MLFLOW_TRACKING_URI")
-os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
-os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+for env_var in ["MLFLOW_TRACKING_URI", "MLFLOW_TRACKING_USERNAME", "MLFLOW_TRACKING_PASSWORD"]:
+    val = os.getenv(env_var)
+    if val is not None:
+        os.environ[env_var] = val
+
+# Fix for Windows encoding issues with emojis in MLflow
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 
 # Function for hyperparamete tuning
@@ -31,7 +38,7 @@ def hyperparameter_tuning(X_train,y_train, param_grid):
     return grid_search
 
 # Load training config from config.yaml
-params = yaml.safe_load(open("config.yaml"))["train"]
+params = yaml.safe_load(open("params.yaml"))["train"]
 
 
 # Model trainer and ML flow logging function
@@ -101,9 +108,10 @@ def trainer(train_path, val_path, test_path , model_path):
         mlflow.log_text(str(cr), "classification_report.txt")
 
         # Verify tracking uri for logging of model
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+        tracking_uri = mlflow.get_tracking_uri()
+        tracking_url_type_store = urlparse(tracking_uri).scheme
 
-        if tracking_url_type_store != 'file':
+        if tracking_url_type_store not in ['file', ''] and not tracking_uri.startswith('mlruns'):
             mlflow.sklearn.log_model(best_model, "model", registered_model_name='Best model')
         else:
             mlflow.sklearn.log_model(best_model, "model", signature=signature)
