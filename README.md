@@ -100,6 +100,8 @@ The pipeline is defined in `dvc.yaml` and consists of three sequential stages:
 - **Script:** `src/evaluate.py`
 - **Input:** `models/model.pkl`, `data/processed/test.csv`
 - Loads the trained model, computes accuracy on the test set, and logs the metric to MLflow.
+
+Data Pipeline:
 <img width="2544" height="1211" alt="Data_Pipeline" src="https://github.com/user-attachments/assets/9eba552a-f113-4e18-8acb-4e081c096942" />
 
 ---
@@ -196,7 +198,8 @@ mlflow ui
 ```
 
 Or navigate directly to your DagsHub repository's **Experiments** tab to view all tracked runs.
-<img width="319" height="312" alt="accuracy" src="https://github.com/user-attachments/assets/d3f11b69-8ce5-4c15-9bdd-44ddc7417972" />
+
+Parallel coordinates plot comparing three MLflow experiment runs across Random Forest hyperparameters and accuracy.
 <img width="1086" height="450" alt="newplot" src="https://github.com/user-attachments/assets/89dbca2b-8487-41fb-8933-d32ec42c2fc8" />
 
 ---
