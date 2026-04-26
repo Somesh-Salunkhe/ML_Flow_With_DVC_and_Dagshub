@@ -199,6 +199,13 @@ mlflow ui
 
 Or navigate directly to your DagsHub repository's **Experiments** tab to view all tracked runs.
 
+## Results
+
+Experiment results — including MLflow run comparisons, hyperparameter configurations,
+and model performance metrics — are hosted on DagsHub:
+
+🔗 [View Experiments on DagsHub](https://dagshub.com/Somesh-Salunkhe/Diabetes_Patient_Classification)
+
 
 ---
 
